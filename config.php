@@ -6,18 +6,18 @@
  * Time: 12:17
  */
 
-define("MYSQL_PASSWORT","");
-define("MYSQL_USER","root");
+define("MYSQL_PASSWORT","zeltlager");
+define("MYSQL_USER","zeltlager");
 define("MYSQL_DATENBANK","zeltlager");
 define("MYSQL_SERVER","localhost");
 
 define("FPDF_FONTPATH","fonts/");
 
-define("HOMECLASS","subpage_unternehmen");
+define("HOMECLASS","subpage_uebersicht");
 
 define("PAGETITLE","Zeltlager");
 
-define("BASEURL","http://172.18.5.132/");
+define("BASEURL","http://127.0.0.1");
 
 ini_set("display_errors","1");
 
@@ -55,19 +55,6 @@ foreach(scandir("subpage/") as $file)
         }
     }
 }
-
-define("basemenu", array(
-    "Essenmarken" => array("class" => "essenmarke"),
-    "Teilnehmer" => array("class" =>  "teilnehmer"),
-));
-
-define("configmenu", array(
-    "Mahlzeiten" => array("class" =>  "mahlzeiten"),
-    "Jugendfeuerwehren" => array("class" =>  "jugendfeuerwehren"),
-    "Zeltdörfer" => array("class" =>  "zeltdoerfer"),
-    "Kostenstellen" => array("class" =>  "kostenstellen"),
-    "Systemeinstellungen" => array("class" =>  "settings"),
-));
 
 $mc = new mysql();
 if(!$mc->connected)

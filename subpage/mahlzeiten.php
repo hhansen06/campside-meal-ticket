@@ -24,7 +24,7 @@ class subpage_mahlzeiten extends subpage {
             $table = new autotable();
             $table->init("mahlzeiten",array("mahlzeit_id","time_from","time_till","typ_id"));
             $table->id_row = "mahlzeit_id";
-            $table->table_name = $this->title;
+#            $table->table_name = "mahlzeiten";
 
 
             function get_timef($data)
@@ -58,7 +58,7 @@ class subpage_mahlzeiten extends subpage {
             $res = $mc->query("SELECT * FROM typ");
             while($row = mysqli_fetch_array($res))
             {
-                $mahlzeittypen[$row["typ_id"]] = utf8_encode($row["bezeichnung"]);
+                $mahlzeittypen[$row["typ_id"]] = $row["bezeichnung"];
             }
             
             $table->set_fieldsource("typ_id",$mahlzeittypen);

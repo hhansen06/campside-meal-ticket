@@ -69,7 +69,24 @@
         <ul class="navbar-nav mr-auto">
 
             <?php
-            foreach(basemenu as $key => $settings)
+
+
+$basemenu = array(
+    "Essenmarken" => array("class" => "essenmarke"),
+    "Teilnehmer" => array("class" =>  "teilnehmer"));
+
+$configmenu = array(
+    "Mahlzeiten" => array("class" =>  "mahlzeiten"),
+    "Jugendfeuerwehren" => array("class" =>  "jugendfeuerwehren"),
+    "Zeltdörfer" => array("class" =>  "zeltdoerfer"),
+    "Kostenstellen" => array("class" =>  "kostenstellen"),
+    "Systemeinstellungen" => array("class" =>  "settings"),
+);
+
+
+
+
+            foreach($basemenu as $key => $settings)
             {
                 if(isset($settings["target"]))
                     $target = $settings["target"];
@@ -104,7 +121,7 @@
             <a class="nav-link dropdown-toggle" id="dropdown01" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Einstellungen</a>
             <div class="dropdown-menu" aria-labelledby="dropdown01">
             <?php
-            foreach(configmenu as $key => $settings)
+            foreach($configmenu as $key => $settings)
             {
                 if(isset($settings["target"]))
                     $target = $settings["target"];
@@ -149,11 +166,6 @@
     <?php
     echo $this->header1;
 
-    if($_SERVER["SERVER_NAME"] == "dev-datenschutz.lkdh.intern")
-    {
-        echo alert("Entwicklungsumgebung!!","Derzeit wird die Datenbank: ".MYSQL_DATENBANK." verwendet!","danger");
-
-    }
 
     echo $this->content;
     ?>

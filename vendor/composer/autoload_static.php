@@ -28,6 +28,10 @@ class ComposerStaticInit82ea6061ccccb318148ebc55cd72e968
             'GuzzleHttp\\Promise\\' => 19,
             'GuzzleHttp\\' => 11,
         ),
+        'E' => 
+        array (
+            'Ellumilel\\' => 10,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
@@ -50,6 +54,10 @@ class ComposerStaticInit82ea6061ccccb318148ebc55cd72e968
         'GuzzleHttp\\' => 
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
+        ),
+        'Ellumilel\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/ellumilel/php-excel-writer/src',
         ),
     );
 

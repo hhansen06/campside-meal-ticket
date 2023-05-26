@@ -17,7 +17,7 @@ class dashboard extends subpage {
 
         if($mz) {
             $timeout = 10000;
-            $msg = "<div id='header'>" . utf8_encode($mz["bezeichnung"]) . " " . date("d.m.Y", $mz["time_till"]) . "</div>";
+            $msg = "<div id='header'>" .$mz["bezeichnung"] . " " . date("d.m.Y", $mz["time_till"]) . "</div>";
             $msg .= "<div id='zeltdorf-container'>";
 
             $res = $mc->query("SELECT * FROM zeltdorf");
@@ -31,15 +31,20 @@ class dashboard extends subpage {
                else
                    $proz = 0;
 
-                $msg .= "<div class='zeltdorf'>
+                if(get_settings("check_korrekt_zeltdorf") == 1 AND get_settings("aktuelles_zeltdorf_id") == $row["zeltdorf_id"])
+                    $active = "active";
+                else
+                    $active = "";
+
+                $msg .= "<div class='zeltdorf".$active."'>
                     <div class='zeltdorf_name'>" . $row["name"] . " ".$anz["anz"]."/".$summe["anz"]."</div>
                     <div class='zeltdorf_wert'>".$proz."%</div>
                 </div>";
             }
             $msg .= "</div>";
 
-            $anz = $mc->fetch_array("select count(*) as anz from teilnehmer as t, teilnehmer_mahlzeit as tm WHERE  tm.teilnehmer_id = t.teilnehmer_id AND tm.mahlzeit_id =".$mz["mahlzeit_id"]);
-            $summe = $mc->fetch_array("select count(*) as anz from teilnehmer as t");
+            $anz = $mc->fetch_array("select count(*) as anz from teilnehmer as t, teilnehmer_mahlzeit as tm, jugendfeuerwehr as j WHERE t.jf_id = j.jf_id AND tm.teilnehmer_id = t.teilnehmer_id AND tm.mahlzeit_id =".$mz["mahlzeit_id"]." AND j.zeltdorf_id != 0");
+            $summe = $mc->fetch_array("select count(*) as anz from teilnehmer as t, jugendfeuerwehr as j where t.jf_id = j.jf_id AND j.zeltdorf_id != 0 ");
 
             if($summe["anz"] > 0)
                 $proz = round($anz["anz"] / ($summe["anz"] /100),2);
@@ -78,7 +83,12 @@ class dashboard extends subpage {
                         </div>
                 ";
 
-            $msg .= "Stand: ".date("H:i:s")." Uhr";
+            $msg .= "Stand: ".date("H:i:s")." Uhr"; 
+
+            $anz = $mc->fetch_array("select count(*) as anz FROM essenmarken  WHERE mahlzeit_id = '".$mz["mahlzeit_id"]."'");
+
+
+            $msg .= "<div style='float:right;'>Gäste bisher: ".$anz["anz"]."</div>";
 
             $msg .= "</div>";
         }

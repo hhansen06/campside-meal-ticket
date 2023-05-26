@@ -10,6 +10,17 @@ body{
 #zeltdorf-container{
     margin: 0 auto;
 }
+
+.zeltdorfactive{
+    border: 1px solid #252525;
+    background-color:green;
+    width: 180px;
+    text-align: center;
+    margin-right: 5px;
+    float:left;
+    margin-bottom: 5px;
+}
+
 .zeltdorf{
     border: 1px solid #252525;
     background-color:#252525;

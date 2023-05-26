@@ -11,18 +11,25 @@ class kasse extends subpage {
 
     function getstats()
     {
-        return "...";
+        return $this->lastbarcode;
     }
+
+    var $lastbarcode;
 
     function check_barcode($data)
     {
+        $this->lastbarcode = $data["barcode"];
         if(startsWith($data["barcode"],"*E"))
         {
             return $this->check_essenmarke($data);
         }
+        if(startsWith($data["barcode"],"*K"))
+        {
+            return $this->konfigure_card($data);
+        }
         if(startsWith($data["barcode"],"*"))
         {
-            return $this->check_teilnehmer($data);
+                return $this->check_teilnehmer($data);
         }
 
             $data = array();
@@ -46,15 +53,54 @@ class kasse extends subpage {
         }
         else {
             $mc = new mysql();
-
+            $teilnehmer = $mc->fetch_array("select * from jugendfeuerwehr as j, teilnehmer as t WHERE j.jf_id = t.jf_id AND t.teilnehmer_id = ".$id);
             $teilnehme_mahlzeit = $mc->fetch_array("SELECT * FROM teilnehmer_mahlzeit WHERE teilnehmer_id = '" . $id . "' AND mahlzeit_id = '".$aktive_mahlzeit["mahlzeit_id"]."'");
             if(!isset($teilnehme_mahlzeit["teilnehmer_mahlzeit_id"]))
             {
-                $mc->query("INSERT into teilnehmer_mahlzeit (teilnehmer_id,mahlzeit_id,time,kasse) VALUES (".$id.",".$aktive_mahlzeit["mahlzeit_id"].",".time().",".$this->get_kasse_id_by_mac($data["mac"]).")");
-                $data["stats"] = $this->getstats();
-                $data["status"] = 1;
-                $data["msg"] = "OK!";
-                set_history("ausweis",$id,10,$this->get_kasse_id_by_mac($data["mac"]));
+                $error = true;
+                $errormsg = "";
+                if(get_settings("check_korrekt_zeltdorf") == 1)
+                {
+                    if($teilnehmer["zeltdorf_id"] == get_settings("aktuelles_zeltdorf_id"))
+                    {
+                        $error = false;
+                    }
+                    else
+                    {
+                        if($teilnehmer["zeltdorf_id"] == 0)
+                        {
+                            $error = false;
+                        }
+                        else {
+                            if(get_settings("unlock_all_zeltdoerfer") > time())
+                            {
+                                $error = false;
+                            }
+                            else {
+                                $error = true;
+                                $errormsg = "falsches Zeltdorf!";
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    $error = false;
+                }
+
+                if(!$error) {
+                    $mc->query("INSERT into teilnehmer_mahlzeit (teilnehmer_id,mahlzeit_id,time,kasse) VALUES (" . $id . "," . $aktive_mahlzeit["mahlzeit_id"] . "," . time() . "," . $this->get_kasse_id_by_mac($data["mac"]) . ")");
+                    $data["stats"] = $this->getstats();
+                    $data["status"] = 1;
+                    $data["msg"] = "OK!";
+                    set_history("ausweis", $id, 10, $this->get_kasse_id_by_mac($data["mac"]));
+                }
+                else
+                {
+                    $data["stats"] = $this->getstats();
+                    $data["status"] = 0;
+                    $data["msg"] = $errormsg;
+                }
 
             }
             else
@@ -71,6 +117,54 @@ class kasse extends subpage {
         return json_encode($data);
     }
 
+    function konfigure_card($data)
+    {
+        if($data["barcode"] == "*K111") {
+
+            if((int)get_settings("check_korrekt_zeltdorf") == 1)
+            {
+                set_settings("check_korrekt_zeltdorf",0);
+                $data = array();
+                $data["stats"] = $this->getstats();
+                $data["status"] = 1;
+                $data["msg"] = "Dorfsperre deaktiviert!";
+                return json_encode($data);
+
+            }
+            else
+            {
+                set_settings("check_korrekt_zeltdorf",1);
+                $data = array();
+                $data["stats"] = $this->getstats();
+                $data["status"] = 1;
+                $data["msg"] = "Dorfsperre aktiv!";
+                return json_encode($data);
+            }
+        }
+        else {
+        if($data["barcode"] == "*K110") {
+            $time = time() + ((int)get_settings("unlock_time")*60);
+            set_settings("unlock_all_zeltdoerfer",$time);
+
+            $data = array();
+            $data["stats"] = $this->getstats();
+            $data["status"] = 1;
+            $data["msg"] = "Entsperrt bis: ".date("H:i",$time);
+            return json_encode($data);
+         }
+        else {
+            $mc = new mysql();
+            $zeltdorf = $mc->fetch_array("SELECT * FROM zeltdorf WHERE barcode = '" . substr($data["barcode"], 1) . "'");
+            set_settings("aktuelles_zeltdorf_id", $zeltdorf["zeltdorf_id"]);
+
+            $data = array();
+            $data["stats"] = $this->getstats();
+            $data["status"] = 1;
+            $data["msg"] = $zeltdorf["name"];
+            return json_encode($data);
+        }
+        }
+    }
 
     function check_essenmarke($data)
     {
@@ -133,9 +227,9 @@ class kasse extends subpage {
             )
         );
         $result = $database->writePoints($points, InfluxDB\Database::PRECISION_SECONDS);
-        print_r($result);
         $mc = new mysql();
         $mc->query("INSERT into kasse (mac,battstate,time_last_seen) VALUES ('".$data["mac"]."','".$data["batterie"]."','".time()."') ON DUPLICATE KEY UPDATE time_last_seen = '".time()."', battstate = '".$data["batterie"]."'");
+        return json_encode(array("ok" => 1));
     }
 
     function get_kasse_id_by_mac($mac)
@@ -153,9 +247,9 @@ class kasse extends subpage {
     {
         $id = $data["id"];
         $jf = $data["jf"];
-        $vorname = $data["vorname"];
-        $nachname = $data["nachname"];
-        $jf_id = $this->get_jfid_by_name($jf);
+        $vorname = utf8_encode($data["vorname"]);
+        $nachname = utf8_encode($data["nachname"]);
+        $jf_id = $this->get_jfid_by_name(utf8_encode($jf));
 
         $mc = new mysql();
          $mc->query("INSERT into teilnehmer (teilnehmer_id,vorname,nachname,jf_id) VALUES ('".$id."','".$vorname."','".$nachname."','".$jf_id."')

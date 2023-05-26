@@ -37,7 +37,7 @@ class subpage_essenmarke extends subpage {
 
         foreach($kstellen as $kstelle)
         {
-            $ret .= "<th colspan=\"3\">".utf8_encode($kstelle["bezeichnung"])."</th>";
+            $ret .= "<th colspan=\"3\">".$kstelle["bezeichnung"]."</th>";
         }
         $ret .= "<th colspan=\"3\">Summe</th>";
         $ret .= "</tr></thead>";
@@ -61,7 +61,7 @@ class subpage_essenmarke extends subpage {
         while ($row = mysqli_fetch_array($res)) {
 
             $ret .= "<tr>";
-            $ret .= "<td>".utf8_encode($row["bezeichnung"])."</td>";
+            $ret .= "<td>".$row["bezeichnung"]."</td>";
             foreach($kstellen as $kstelle)
             {
                 $data = $page->sql->fetch_array("SELECT COUNT(*) as anz, SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as guelt, SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as gueltn FROM essenmarken WHERE kostenstelle_id = '".$kstelle["kostenstelle_id"]."' and typ_id = '".$row["typ_id"]."' ");
@@ -85,7 +85,7 @@ class subpage_essenmarke extends subpage {
 
         foreach($kstellen as $kstelle)
         {
-            $ret .= "<th colspan=\"1\">".utf8_encode($kstelle["bezeichnung"])."</th>";
+            $ret .= "<th colspan=\"1\">".$kstelle["bezeichnung"]."</th>";
         }
         $ret .= "<th colspan=\"1\">Summe</th>";
         $ret .= "</tr></thead>";
@@ -111,7 +111,7 @@ class subpage_essenmarke extends subpage {
 
 
             $ret .= "<tr>";
-            $ret .= "<td>".date("d.m.Y",$row["time_from"])." ".utf8_encode($row["bezeichnung"])."</td>";
+            $ret .= "<td>".date("d.m.Y",$row["time_from"])." ".$row["bezeichnung"]."</td>";
             foreach($kstellen as $kstelle)
             {
                 $data = $page->sql->fetch_array("SELECT COUNT(*) as anz  FROM essenmarken WHERE kostenstelle_id = '".$kstelle["kostenstelle_id"]."' and mahlzeit_id = '".$row["mahlzeit_id"]."' AND status = 1");
@@ -155,15 +155,15 @@ class subpage_essenmarke extends subpage {
             $typ = $ms->fetch_array("SELECT * FROM typ WHERE typ_id = '".$emarke["typ_id"]."'");
 
             $content = "Gedruckt am <b>".date("d.m.Y",$emarke["time_created"])."</b> um <b>".date("H:i",$emarke["time_created"])."</b> Uhr<br>";
-            $content .= "Kostenstelle: <b>".utf8_encode($kostenstellen["bezeichnung"])."</b><br>";
-            $content .= "Typ: <b>".utf8_encode($typ["bezeichnung"])."</b><br><br>";
+            $content .= "Kostenstelle: <b>".$kostenstellen["bezeichnung"]."</b><br>";
+            $content .= "Typ: <b>".$typ["bezeichnung"]."</b><br><br>";
 
             if($emarke["status"] == 0)
                 $content .= "Status: <b>Unbenutzt</b><br><br>";
             else
             {
                 $mzeit = $ms->fetch_array("SELECT * FROM mahlzeiten as m, typ as t WHERE t.typ_id = m.typ_id AND m.mahlzeit_id = '".$emarke["mahlzeit_id"]."'");
-                $content .= "Status: <b style='color:red;'>benutzt (".date("d.m.Y",$mzeit["time_from"])." ".utf8_encode($mzeit["bezeichnung"]).")</b><br><br>";
+                $content .= "Status: <b style='color:red;'>benutzt (".date("d.m.Y",$mzeit["time_from"])." ".$mzeit["bezeichnung"].")</b><br><br>";
 
             }
 
@@ -196,14 +196,14 @@ class subpage_essenmarke extends subpage {
         $kostenstellen = array();
         while($row = mysqli_fetch_array($res_k))
         {
-           $kostenstellen[$row["kostenstelle_id"]] = utf8_encode($row["bezeichnung"]);
+           $kostenstellen[$row["kostenstelle_id"]] = $row["bezeichnung"];
         }
 
         $res_k = $ms->query("SELECT * FROM typ");
         $typ = array();
         while($row = mysqli_fetch_array($res_k))
         {
-            $typ[$row["typ_id"]] = utf8_encode($row["bezeichnung"]." (".$row["preis"]." Euro)");
+            $typ[$row["typ_id"]] = $row["bezeichnung"]." (".$row["preis"]." Euro)";
         }
 
         $form->add_textbox("Anzahl:","1","","","number","anzahl",true);
@@ -212,6 +212,8 @@ class subpage_essenmarke extends subpage {
         $form->add_select("Typ:","",$typ,"","typ",true);
 
         $form->add_checkbox("Essenmarke schneiden","", true,"schneiden",true);
+
+        $form->add_textbox("Wertigkeit für Mehrfachmarke:","1","","","number","multimark_anz",true);
 
 
         $form->setTargetClassFunction("subpage_essenmarke","essenmarke_drucken");
@@ -233,8 +235,9 @@ class subpage_essenmarke extends subpage {
 
         while($anz < $data["anzahl"])
         {
-            $mc->query("INSERT into essenmarken (typ_id,kostenstelle_id,time_created) VALUES ('".$data["typ"]."','".$data["kostenstelle"]."','".time()."')");
-            $id = $mc->getID();
+                if($mc->query("INSERT into essenmarken (typ_id,kostenstelle_id,time_created,wertigkeit) VALUES ('".$data["typ"]."','".$data["kostenstelle"]."','".time()."','".$data["multimark_anz"]."')"))
+                {
+                $id = $mc->getID();
 
                 $printer-> setTextSize(1,2);
                 $printer -> setJustification(Printer::JUSTIFY_CENTER);
@@ -249,18 +252,25 @@ class subpage_essenmarke extends subpage {
                 $kostenstelle = $mc->fetch_array("SELECT * FROM kostenstellen WHERE kostenstelle_id = '".$data["kostenstelle"]."'");
 
 
-                $printer->text(utf8_encode($typ["bezeichnung"])."\n");
+                $printer->text($typ["bezeichnung"]."\n");
+
+                if($data["multimark_anz"] > 1) {
+                    $printer -> feed();
+                    $printer -> text("Essenmarke zählt für ".$data["multimark_anz"]." Personen\n\n");
+                }
+
+
                 $printer -> feed();
                 $printer-> setTextSize(1,1);
 
                 $printer->setBarcodeHeight(80);
                 $printer->barcode("E".$id);
-                $printer->text("\nID: ".$id." // ".utf8_encode($kostenstelle["bezeichnung"])."\n\n");
+                $printer->text("\nID: ".$id." // ".$kostenstelle["bezeichnung"]."\n\n");
 
-                $printer->text($typ["preis"]." Euro");
+                $printer->text(((int)$typ["preis"]*(int)$data["multimark_anz"])." Euro");
                 $printer->feed(2);
 
-                $printer->text(utf8_encode(get_settings("essenmarke_eula_text")));
+                $printer->text(get_settings("essenmarke_eula_text"));
                 $printer->feed();
 
                 $printer-> setTextSize(1,1);
@@ -274,6 +284,11 @@ class subpage_essenmarke extends subpage {
                 {
                     $printer->text("------------------");
                     $printer->feed();
+                }
+                }
+                else
+                {
+                    echo $mc->getError();
                 }
             $anz++;
         }

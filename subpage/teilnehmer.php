@@ -80,9 +80,9 @@ class subpage_teilnehmer extends subpage {
             $reset_link = "<a class='' href='#' onclick=\"ajax_modal('subpage_teilnehmer','reset_essen','".$mahlzeit["teilnehmer_mahlzeit_id"]."','".$mahlzeit["teilnehmer_id"]."')\">[zurücksetzen]</a>";
 
             if(isset($mahlzeit["teilnehmer_mahlzeit_id"]))
-                $content .= date("d.m.Y",$row["time_from"])." - ".utf8_encode($row["bezeichnung"])." - <span style='color:green;'>gegessen ".$reset_link."</span><br>";
+                $content .= date("d.m.Y",$row["time_from"])." - ".$row["bezeichnung"]." - <span style='color:green;'>gegessen ".$reset_link."</span><br>";
             else
-                $content .= date("d.m.Y",$row["time_from"])." - ".utf8_encode($row["bezeichnung"])." - <span style='color:red;'>nicht gegessen</span><br>";
+                $content .= date("d.m.Y",$row["time_from"])." - ".$row["bezeichnung"]." - <span style='color:red;'>nicht gegessen</span><br>";
 
         }
 
@@ -112,8 +112,8 @@ class subpage_teilnehmer extends subpage {
             $typ = $ms->fetch_array("SELECT * FROM typ WHERE typ_id = '".$emarke["typ_id"]."'");
 
             $content = "Gedruckt am <b>".date("d.m.Y",$emarke["time_created"])."</b> um <b>".date("H:i",$emarke["time_created"])."</b> Uhr<br>";
-            $content .= "Kostenstelle: <b>".utf8_encode($kostenstellen["bezeichnung"])."</b><br>";
-            $content .= "Typ: <b>".utf8_encode($typ["bezeichnung"])."</b><br>";
+            $content .= "Kostenstelle: <b>".$kostenstellen["bezeichnung"]."</b><br>";
+            $content .= "Typ: <b>".$typ["bezeichnung"]."</b><br>";
 
         }
         else
@@ -136,14 +136,14 @@ class subpage_teilnehmer extends subpage {
         $kostenstellen = array();
         while($row = mysqli_fetch_array($res_k))
         {
-           $kostenstellen[$row["kostenstelle_id"]] = utf8_encode($row["bezeichnung"]);
+           $kostenstellen[$row["kostenstelle_id"]] = $row["bezeichnung"];
         }
 
         $res_k = $ms->query("SELECT * FROM typ");
         $typ = array();
         while($row = mysqli_fetch_array($res_k))
         {
-            $typ[$row["typ_id"]] = utf8_encode($row["bezeichnung"]." (".$row["preis"]." Euro)");
+            $typ[$row["typ_id"]] = $row["bezeichnung"]." (".$row["preis"]." Euro)";
         }
 
         $form->add_textbox("Anzahl:","1","","","number","anzahl",true);

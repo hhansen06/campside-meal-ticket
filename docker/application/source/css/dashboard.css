@@ -1,0 +1,80 @@
+body{
+    padding: 0px;
+    margin: 5px;
+    background-color: black;
+    font-size: 30px;
+}
+#contentarea{
+    color: white;
+}
+#zeltdorf-container{
+    margin: 0 auto;
+}
+
+.zeltdorfactive{
+    border: 1px solid #252525;
+    background-color:green;
+    width: 180px;
+    text-align: center;
+    margin-right: 5px;
+    float:left;
+    margin-bottom: 5px;
+}
+
+.zeltdorf{
+    border: 1px solid #252525;
+    background-color:#252525;
+    width: 180px;
+    text-align: center;
+    margin-right: 5px;
+    float:left;
+    margin-bottom: 5px;
+}
+.zeltdorf_name{
+    font-size: 20px;
+}
+.zeltdorf_wert{
+    font-size:40px;
+}
+#gesamt{
+    margin-top: 5px;
+    clear:both;
+    height: 100px;
+    background-color: #252525;
+}
+#gesamt-text{
+    text-align:center;
+}
+.gesamt-progressbar{
+    background-color: green;
+}
+
+.pulldown{
+    position:absolute;
+    bottom: 0;
+    width: 99%;
+}
+#uhr{
+    position:absolute;
+    top: 0;
+    right: 5px;
+    color:red;
+}
+#uhr2{
+    text-align: center;
+    font-size: 250px;
+}
+.date{
+    ext-align: center;
+    font-size: 200px;
+}
+
+#stats{
+    margin-top: 5px;
+    width: 100%;
+    height: 365px;
+    background-color:#252525;
+    text-align: center;
+    vertical-align: center;
+
+}

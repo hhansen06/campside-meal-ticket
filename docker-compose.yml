@@ -1,0 +1,43 @@
+version: "3.4"
+volumes:
+  database:
+  
+services:
+  database-bootstrap:
+     build: 
+       context: docker/database-bootstrap
+     environment:
+      - SQLFILE=dump.sql
+      - MYSQL_ROOT_PASSWORD=changeme
+      - MYSQL_DATABASE=zeltlager
+      - database:/var/lib/mysql
+     depends_on:
+     - database
+
+  database:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=changeme
+      - MYSQL_USER=zeltlager
+      - MYSQL_PASSWORD=zeltlager
+      - MYSQL_DATABASE=zeltlager
+    expose:
+      - 3306
+    volumes:
+      - database:/var/lib/mysql
+    restart: always
+  
+  application:
+    ports:
+      - 80:80/tcp
+    build: 
+      context: docker/application
+    environment:
+      - MYSQL_USER=zeltlager
+      - MYSQL_PASSWORD=zeltlager
+      - MYSQL_DATABASE=zeltlager
+      - BASE_URL=http://groot.lab.h2com
+    restart: always
+    depends_on:
+      - database
+      - database-bootstrap

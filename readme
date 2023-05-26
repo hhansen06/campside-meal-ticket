@@ -1,9 +1,7 @@
+### 
 
 
- *  $gruppe_id = $_SESSION["user"]->gruppe_id ;
- * $orga_id =  $_SESSION["user"]->organisation_id;
 
-
-$page->is_admin();
-
- $_SESSION["user"]->data["right_can_delete"];
+## Infos 
+### Create user 
+- docker compose exec -it database mysql -uroot -pchangeme -Dzeltlager -e "Insert into user (email, password, enabled,time_created) VALUES (\"admin\", SHA1(\"admin\") ,1,0);"

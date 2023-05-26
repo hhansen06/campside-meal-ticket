@@ -23,6 +23,9 @@ changing the active campside, can be archived with K Cards.
 Check Barcode:
 http://SERVERIP/ajax.php?str_class=kasse&str_function=check_barcode&barcode=*E12345
 
+Get last Barcode:
+http://SERVERIP/ajax.php?str_class=kasse&str_function=getstats
+Will return last scanned barcode.
 
-
-
+Add new Teilnehmer:
+http://SERVERIP/ajax.php?str_class=kasse&str_function=add_ausweis&vorname=tom&nachname=tester&jf=Musterhausen&id=12345

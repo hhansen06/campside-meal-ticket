@@ -212,26 +212,6 @@ class kasse extends subpage {
         return json_encode($data);
     }
 
-    function batterie_state($data)
-    {
-        // Port: 32768
-        $database = InfluxDB\Client::fromDSN(sprintf('influxdb://user:pass@%s:%s/%s', get_settings("influx_ip"),  get_settings("influx_port"),  get_settings("influx_database")));
-
-        $points = array(
-            new InfluxDB\Point(
-                "kasse", // name of the measurement
-                null,
-                ['host' => $data["mac"]], // optional tags
-                ['batterie' => (float)$data["batterie"]],
-                time()
-            )
-        );
-        $result = $database->writePoints($points, InfluxDB\Database::PRECISION_SECONDS);
-        $mc = new mysql();
-        $mc->query("INSERT into kasse (mac,battstate,time_last_seen) VALUES ('".$data["mac"]."','".$data["batterie"]."','".time()."') ON DUPLICATE KEY UPDATE time_last_seen = '".time()."', battstate = '".$data["batterie"]."'");
-        return json_encode(array("ok" => 1));
-    }
-
     function get_kasse_id_by_mac($mac)
     {
         $mc = new mysql();
